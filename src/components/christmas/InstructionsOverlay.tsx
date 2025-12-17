@@ -38,7 +38,7 @@ export function InstructionsOverlay({ onDismiss }: InstructionsOverlayProps) {
         </Button>
 
         <h2 className="text-2xl font-display font-bold text-christmas-gold mb-6 text-center">
-          🎄 Welcome to the Magic Tree
+          🎄 欢迎来到魔法圣诞树
         </h2>
 
         <div className="space-y-4">
@@ -47,9 +47,9 @@ export function InstructionsOverlay({ onDismiss }: InstructionsOverlayProps) {
               <Grab className="w-6 h-6 text-christmas-green" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Make a Fist</h3>
+              <h3 className="font-semibold text-foreground">握拳</h3>
               <p className="text-sm text-muted-foreground">
-                Particles assemble into a Christmas tree
+                粒子聚合成圣诞树
               </p>
             </div>
           </div>
@@ -59,9 +59,9 @@ export function InstructionsOverlay({ onDismiss }: InstructionsOverlayProps) {
               <Hand className="w-6 h-6 text-christmas-gold" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Open Your Palm</h3>
+              <h3 className="font-semibold text-foreground">张开手掌</h3>
               <p className="text-sm text-muted-foreground">
-                Tree explodes into a galaxy of particles
+                圣诞树爆炸成粒子星空
               </p>
             </div>
           </div>
@@ -71,9 +71,9 @@ export function InstructionsOverlay({ onDismiss }: InstructionsOverlayProps) {
               <MousePointer className="w-6 h-6 text-christmas-red" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Pinch Gesture</h3>
+              <h3 className="font-semibold text-foreground">捏合手势</h3>
               <p className="text-sm text-muted-foreground">
-                Select and enlarge a photo card
+                选中并放大照片卡片
               </p>
             </div>
           </div>
@@ -83,9 +83,9 @@ export function InstructionsOverlay({ onDismiss }: InstructionsOverlayProps) {
               <Move className="w-6 h-6 text-muted-foreground" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Move Your Hand</h3>
+              <h3 className="font-semibold text-foreground">移动手部</h3>
               <p className="text-sm text-muted-foreground">
-                Orbit around the scene in galaxy mode
+                在星空模式下环绕场景
               </p>
             </div>
           </div>
@@ -93,14 +93,14 @@ export function InstructionsOverlay({ onDismiss }: InstructionsOverlayProps) {
 
         <div className="mt-6 pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground text-center mb-4">
-            No camera? Double-click to toggle modes, drag to orbit!
+            没有摄像头？双击切换模式，拖动旋转视角！
           </p>
           
           <Button
             onClick={handleDismiss}
             className="w-full bg-christmas-gold hover:bg-christmas-gold/90 text-christmas-deep-blue font-semibold"
           >
-            Let's Go! ✨
+            开始体验 ✨
           </Button>
         </div>
       </div>
