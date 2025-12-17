@@ -13,6 +13,7 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
     pinchDistance: 1,
     isTracking: false,
   });
+  const [status, setStatus] = useState<string>('idle');
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const handsRef = useRef<any>(null);
@@ -128,6 +129,7 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
 
     const initMediaPipe = async () => {
       try {
+        setStatus('loading-mediapipe');
         console.log('[Gesture] Starting MediaPipe initialization...');
         
         // Dynamically import MediaPipe (only Hands, not Camera)
@@ -136,6 +138,7 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
         if (!mounted) return;
 
         // Request camera access
+        setStatus('requesting-camera');
         console.log('[Gesture] Requesting camera...');
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -161,6 +164,7 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
         videoRef.current = video;
 
         await video.play();
+        setStatus('initializing-hands');
         console.log('[Gesture] Video playing, dimensions:', video.videoWidth, 'x', video.videoHeight);
 
         // Initialize Hands
@@ -180,6 +184,7 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
         hands.onResults(onResults);
         handsRef.current = hands;
 
+        setStatus('processing-frames');
         console.log('[Gesture] MediaPipe Hands initialized');
 
         // Use requestAnimationFrame instead of MediaPipe Camera
@@ -207,6 +212,7 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
 
       } catch (error) {
         console.error('[Gesture] MediaPipe initialization failed:', error);
+        setStatus('error: ' + (error as Error).message);
         setState(prev => ({ ...prev, isTracking: false }));
       }
     };
@@ -234,5 +240,5 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
     };
   }, [enabled, onResults]);
 
-  return state;
+  return { ...state, status };
 }

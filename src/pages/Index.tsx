@@ -118,6 +118,7 @@ const Index = () => {
         isTracking={handGesture.isTracking}
         usingMouse={!handGesture.isTracking}
         cameraPermission={cameraPermission}
+        mediapipeStatus={handGesture.status}
         onRequestCamera={handleRequestCamera}
       />
 

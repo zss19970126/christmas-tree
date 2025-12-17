@@ -6,6 +6,7 @@ interface GestureIndicatorProps {
   isTracking: boolean;
   usingMouse: boolean;
   cameraPermission: 'prompt' | 'granted' | 'denied' | 'requesting';
+  mediapipeStatus: string;
   onRequestCamera: () => void;
 }
 
@@ -30,6 +31,7 @@ export function GestureIndicator({
   isTracking, 
   usingMouse, 
   cameraPermission,
+  mediapipeStatus,
   onRequestCamera 
 }: GestureIndicatorProps) {
   // Show camera permission prompt
@@ -96,7 +98,7 @@ export function GestureIndicator({
 
   // Normal gesture status display
   return (
-    <div className="absolute top-4 left-4 z-10">
+    <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
       <div className="glass-gold rounded-xl px-4 py-3 flex items-center gap-3 text-foreground">
         <div className={`
           p-2 rounded-lg 
@@ -122,6 +124,16 @@ export function GestureIndicator({
           <div className="w-2 h-2 rounded-full bg-christmas-green animate-pulse ml-2" />
         )}
       </div>
+      
+      {/* MediaPipe Status Debug */}
+      {cameraPermission === 'granted' && !isTracking && (
+        <div className="glass rounded-lg px-3 py-2 text-xs text-muted-foreground">
+          <span className="opacity-70">MediaPipe: </span>
+          <span className={mediapipeStatus.includes('error') ? 'text-christmas-red' : 'text-christmas-gold'}>
+            {mediapipeStatus}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
