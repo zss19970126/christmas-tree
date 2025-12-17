@@ -4,9 +4,12 @@ import { OrbitControls, Stars, Environment } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { ParticleSystem } from './ParticleSystem';
+import { KLineParticleSystem } from './KLineParticleSystem';
 import { PhotoCards } from './PhotoCards';
 import { TreeStar } from './TreeStar';
 import { TreeState } from '@/types/christmas';
+
+export type TreeStyle = 'kline' | 'christmas';
 
 interface SceneContentProps {
   state: TreeState;
@@ -14,6 +17,7 @@ interface SceneContentProps {
   focusedPhotoIndex: number | null;
   orbitRotation: { x: number; y: number };
   handPosition: { x: number; y: number } | null;
+  treeStyle: TreeStyle;
 }
 
 function CameraController({ 
@@ -65,6 +69,7 @@ function SceneContent({
   focusedPhotoIndex,
   orbitRotation,
   handPosition,
+  treeStyle,
 }: SceneContentProps) {
   return (
     <>
@@ -100,8 +105,12 @@ function SceneContent({
         speed={0.5}
       />
       
-      {/* Main particle system */}
-      <ParticleSystem state={state} particleCount={2500} />
+      {/* Main particle system - switchable */}
+      {treeStyle === 'kline' ? (
+        <KLineParticleSystem state={state} particleCount={1000} />
+      ) : (
+        <ParticleSystem state={state} particleCount={2500} />
+      )}
       
       {/* Photo cards */}
       <PhotoCards 
@@ -135,6 +144,7 @@ interface ChristmasSceneProps {
   focusedPhotoIndex: number | null;
   orbitRotation: { x: number; y: number };
   handPosition: { x: number; y: number } | null;
+  treeStyle: TreeStyle;
 }
 
 export function ChristmasScene({ 
@@ -143,6 +153,7 @@ export function ChristmasScene({
   focusedPhotoIndex,
   orbitRotation,
   handPosition,
+  treeStyle,
 }: ChristmasSceneProps) {
   return (
     <Canvas
@@ -163,6 +174,7 @@ export function ChristmasScene({
         focusedPhotoIndex={focusedPhotoIndex}
         orbitRotation={orbitRotation}
         handPosition={handPosition}
+        treeStyle={treeStyle}
       />
     </Canvas>
   );
