@@ -16,7 +16,6 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const handsRef = useRef<any>(null);
-  const cameraRef = useRef<any>(null);
   const lastGestureRef = useRef<GestureType>('none');
 
   const calculateFingerDistance = useCallback((landmarks: any[], finger1: number, finger2: number) => {
@@ -124,24 +123,45 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
     if (!enabled) return;
 
     let mounted = true;
+    let animationFrameId: number | null = null;
+    let stream: MediaStream | null = null;
 
     const initMediaPipe = async () => {
       try {
         console.log('[Gesture] Starting MediaPipe initialization...');
         
-        // Dynamically import MediaPipe
+        // Dynamically import MediaPipe (only Hands, not Camera)
         const { Hands } = await import('@mediapipe/hands');
-        const { Camera } = await import('@mediapipe/camera_utils');
 
         if (!mounted) return;
+
+        // Request camera access
+        console.log('[Gesture] Requesting camera...');
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: 'user'
+          }
+        });
+
+        if (!mounted) {
+          stream.getTracks().forEach(t => t.stop());
+          return;
+        }
 
         // Create video element
         const video = document.createElement('video');
         video.style.display = 'none';
-        video.setAttribute('playsinline', 'true'); // Important for iOS
+        video.setAttribute('playsinline', 'true');
         video.setAttribute('autoplay', 'true');
+        video.muted = true;
+        video.srcObject = stream;
         document.body.appendChild(video);
         videoRef.current = video;
+
+        await video.play();
+        console.log('[Gesture] Video playing, dimensions:', video.videoWidth, 'x', video.videoHeight);
 
         // Initialize Hands
         const hands = new Hands({
@@ -153,58 +173,41 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
         hands.setOptions({
           maxNumHands: 1,
           modelComplexity: 1,
-          minDetectionConfidence: 0.5,  // Lowered from 0.7
-          minTrackingConfidence: 0.3,   // Lowered from 0.5
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.3,
         });
 
         hands.onResults(onResults);
         handsRef.current = hands;
 
-        console.log('[Gesture] MediaPipe Hands initialized, starting camera...');
+        console.log('[Gesture] MediaPipe Hands initialized');
 
-        // Initialize camera with explicit getUserMedia first
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              width: { ideal: 640 },
-              height: { ideal: 480 },
-              facingMode: 'user'
-            }
-          });
+        // Use requestAnimationFrame instead of MediaPipe Camera
+        let lastTime = 0;
+        const processFrame = async (currentTime: number) => {
+          if (!mounted || !handsRef.current || !videoRef.current) return;
           
-          video.srcObject = stream;
-          await video.play();
-          
-          console.log('[Gesture] Camera stream acquired successfully');
-
-          // Use MediaPipe Camera for frame processing
-          const camera = new Camera(video, {
-            onFrame: async () => {
-              if (handsRef.current && videoRef.current) {
-                try {
-                  await handsRef.current.send({ image: videoRef.current });
-                } catch (e) {
-                  // Silently handle frame errors
-                }
+          // Process at ~30fps
+          if (currentTime - lastTime > 33) {
+            lastTime = currentTime;
+            try {
+              if (videoRef.current.readyState >= 2) {
+                await handsRef.current.send({ image: videoRef.current });
               }
-            },
-            width: 640,
-            height: 480,
-          });
+            } catch (e) {
+              // Silently handle frame errors
+            }
+          }
+          
+          animationFrameId = requestAnimationFrame(processFrame);
+        };
 
-          cameraRef.current = camera;
-          await camera.start();
-          console.log('[Gesture] MediaPipe camera processing started');
-        } catch (cameraError) {
-          console.error('[Gesture] Camera access failed:', cameraError);
-          // Update state to reflect the failure
-          setState(prev => ({
-            ...prev,
-            isTracking: false,
-          }));
-        }
+        console.log('[Gesture] Starting frame processing...');
+        animationFrameId = requestAnimationFrame(processFrame);
+
       } catch (error) {
         console.error('[Gesture] MediaPipe initialization failed:', error);
+        setState(prev => ({ ...prev, isTracking: false }));
       }
     };
 
@@ -213,16 +216,21 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
     return () => {
       mounted = false;
       console.log('[Gesture] Cleaning up...');
-      if (cameraRef.current) {
-        cameraRef.current.stop();
+      
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
       }
+      
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      
       if (videoRef.current) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
         videoRef.current.remove();
+        videoRef.current = null;
       }
+      
+      handsRef.current = null;
     };
   }, [enabled, onResults]);
 
