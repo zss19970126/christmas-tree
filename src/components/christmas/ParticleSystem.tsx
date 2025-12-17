@@ -144,12 +144,8 @@ export function ParticleSystem({ state, particleCount = 2500 }: ParticleSystemPr
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, particleCount]}>
       <sphereGeometry args={[1, 12, 12]} />
-      <meshStandardMaterial
-        metalness={0.4}
-        roughness={0.3}
-        emissiveIntensity={0.5}
+      <meshBasicMaterial
         toneMapped={false}
-        vertexColors
       />
     </instancedMesh>
   );
