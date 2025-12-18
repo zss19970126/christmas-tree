@@ -1,73 +1,62 @@
-# Welcome to your Lovable project
 
-## Project info
+# Christmas Tree Space 🎄
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+这是一个的3d交互式圣诞树网页项目。
 
-## How can I edit this code?
+**在线预览**: [https://christmas-tree.space/]
 
-There are several ways of editing your application.
+## 🛠 如何编辑和开发
 
-**Use Lovable**
+你可以通过多种方式修改和参与该项目的开发：
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### 1. 使用(AI 辅助开发) Lovable 或者谷歌的aistudio
 
-Changes made via Lovable will be committed automatically to this repo.
+ [Lovable 项目页面]并开始通过提示词（Prompting）进行修改。
+后面再补充
+谷歌(https://aistudio.google.com/)
 
-**Use your preferred IDE**
+### 2. 使用本地 IDE (推荐)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+如果你习惯在本地开发（例如使用 VS Code），可以将仓库克隆到本地。推送（Push）的代码。
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**前提条件**：你需要安装 Node.js 和 npm。推荐使用 [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) 进行版本管理。
 
-Follow these steps:
+**操作步骤：**
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# 第一步：克隆仓库 (请将 <YOUR_GIT_URL> 替换为你的 Git 地址)
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# 第二步：进入项目目录
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# 第三步：安装依赖
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 第四步：启动开发服务器 (支持热更新和即时预览)
 npm run dev
+
 ```
 
-**Edit a file directly in GitHub**
+### 3. 直接在 GitHub 上编辑
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+* 浏览到你需要修改的文件。
+* 点击文件视图右上角的 "Edit" (铅笔图标) 按钮。
+* 修改代码并提交 Commit。
 
-**Use GitHub Codespaces**
+### 4. 使用 GitHub Codespaces
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+* 在仓库主页，点击右上角的绿色 "Code" 按钮。
+* 选择 "Codespaces" 选项卡。
+* 点击 "New codespace" 启动云端开发环境。
+* 编辑完成后提交并推送代码。
 
-## What technologies are used for this project?
+## 💻 技术栈
 
-This project is built with:
+本项目基于现代前端技术栈构建：
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+* **Vite** - 极速的前端构建工具
+* **TypeScript** - 类型安全的 JavaScript 超集
+* **React** - 用于构建用户界面的库
+* **shadcn-ui** - 高质量的 UI 组件集合
+* **Tailwind CSS** - 原子化 CSS 框架
