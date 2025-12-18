@@ -159,34 +159,15 @@ function PhotoCardMesh({
     );
   }, [url, index]);
 
-  // Track if we need updates
-  const needsUpdateRef = useRef(true);
-  const prevStateRef = useRef(state);
-  const prevFocusedRef = useRef(isFocused);
-  const frameCountRef = useRef(0);
-  
-  useEffect(() => {
-    needsUpdateRef.current = true;
-  }, [state, isFocused]);
-
   useFrame((_, delta) => {
     if (!meshRef.current) return;
     
-    frameCountRef.current++;
-    
-    // Check if state changed
-    if (prevStateRef.current !== state || prevFocusedRef.current !== isFocused) {
-      needsUpdateRef.current = true;
-      prevStateRef.current = state;
-      prevFocusedRef.current = isFocused;
-    }
-    
     const spring = springRef.current;
-    const dt = Math.min(delta, 0.033);
+    const dt = Math.min(delta, 0.033); // Cap delta to prevent instability
     
     timeRef.current += dt;
     
-    // Calculate target position
+    // Calculate target position based on state
     const targetPos = isFocused 
       ? new THREE.Vector3(0, 0, 0.8)
       : state === 'tree' 
@@ -195,28 +176,13 @@ function PhotoCardMesh({
     
     const targetScale = isFocused ? 5 : 0.4;
     
-    // Check if we're close enough to target to skip updates
-    const positionDelta = spring.position.distanceTo(targetPos);
-    const scaleDelta = Math.abs(spring.scale - targetScale);
-    const velocityMag = spring.velocity.length();
-    
-    // If stable, only update every 4th frame for floating animation
-    if (positionDelta < 0.01 && scaleDelta < 0.01 && velocityMag < 0.01) {
-      needsUpdateRef.current = false;
-      // Still do floating animation but less frequently
-      if (frameCountRef.current % 4 === 0 && !isFocused) {
-        meshRef.current.position.y = spring.position.y + Math.sin(timeRef.current * 0.5) * 0.005;
-      }
-      meshRef.current.lookAt(camera.position);
-      return;
-    }
-    
-    // Spring physics for position
+    // Spring physics for position (F = -k*x - d*v)
     const displacement = new THREE.Vector3().subVectors(spring.position, targetPos);
     const springForce = displacement.clone().multiplyScalar(-SPRING_STIFFNESS);
     const dampingForce = spring.velocity.clone().multiplyScalar(-SPRING_DAMPING);
     const acceleration = springForce.add(dampingForce);
     
+    // Update velocity and position using semi-implicit Euler
     spring.velocity.add(acceleration.multiplyScalar(dt));
     spring.position.add(spring.velocity.clone().multiplyScalar(dt));
     
@@ -232,11 +198,14 @@ function PhotoCardMesh({
     // Apply to mesh
     meshRef.current.position.copy(spring.position);
     
+    // Add subtle floating motion when not focused
     if (!isFocused) {
       meshRef.current.position.y += Math.sin(timeRef.current * 0.5) * 0.005;
     }
     
     meshRef.current.scale.set(spring.scale, spring.scale, 1);
+    
+    // Make card face camera
     meshRef.current.lookAt(camera.position);
   });
 
