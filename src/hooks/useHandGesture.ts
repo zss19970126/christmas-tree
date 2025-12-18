@@ -18,6 +18,9 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const handsRef = useRef<any>(null);
   const lastGestureRef = useRef<GestureType>('none');
+  // Store callback in ref to avoid re-initialization
+  const onGestureChangeRef = useRef(onGestureChange);
+  onGestureChangeRef.current = onGestureChange;
 
   const calculateFingerDistance = useCallback((landmarks: any[], finger1: number, finger2: number) => {
     const p1 = landmarks[finger1];
@@ -32,9 +35,6 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
   const detectGesture = useCallback((landmarks: any[]): GestureType => {
     if (!landmarks || landmarks.length < 21) return 'none';
 
-    // Finger tip indices: thumb=4, index=8, middle=12, ring=16, pinky=20
-    // Finger MCP indices: thumb=2, index=5, middle=9, ring=13, pinky=17
-    
     const thumbTip = landmarks[4];
     const indexTip = landmarks[8];
     const middleTip = landmarks[12];
@@ -45,7 +45,6 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
     const middleMcp = landmarks[9];
     const ringMcp = landmarks[13];
     const pinkyMcp = landmarks[17];
-    const wrist = landmarks[0];
 
     // Check pinch (thumb to index distance)
     const pinchDist = calculateFingerDistance(landmarks, 4, 8);
@@ -53,7 +52,7 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
       return 'pinch';
     }
 
-    // Check if fingers are extended (tip above MCP in y-axis, relative to wrist)
+    // Check if fingers are extended
     const indexExtended = indexTip.y < indexMcp.y;
     const middleExtended = middleTip.y < middleMcp.y;
     const ringExtended = ringTip.y < ringMcp.y;
@@ -61,43 +60,32 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
 
     const extendedCount = [indexExtended, middleExtended, ringExtended, pinkyExtended].filter(Boolean).length;
 
-    // Open palm: most fingers extended
-    if (extendedCount >= 3) {
-      return 'open';
-    }
-
-    // Fist: most fingers closed
-    if (extendedCount <= 1) {
-      return 'fist';
-    }
-
-    // Pointing: only index extended
-    if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
-      return 'pointing';
-    }
+    if (extendedCount >= 3) return 'open';
+    if (extendedCount <= 1) return 'fist';
+    if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return 'pointing';
 
     return 'none';
   }, [calculateFingerDistance]);
 
+  // Stable onResults callback - doesn't depend on external callbacks
   const onResults = useCallback((results: any) => {
     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
       const landmarks = results.multiHandLandmarks[0];
       const gesture = detectGesture(landmarks);
       
-      // Get palm center for hand position
-      const palmCenter = landmarks[9]; // Middle finger MCP
+      const palmCenter = landmarks[9];
       const handPosition = {
-        x: 1 - palmCenter.x, // Mirror x-axis
+        x: 1 - palmCenter.x,
         y: palmCenter.y,
       };
 
-      // Calculate pinch distance
       const pinchDistance = calculateFingerDistance(landmarks, 4, 8);
 
       if (gesture !== lastGestureRef.current) {
         console.log('[Gesture] Detected gesture:', gesture);
         lastGestureRef.current = gesture;
-        onGestureChange?.(gesture);
+        // Use ref to call callback - avoids dependency issues
+        onGestureChangeRef.current?.(gesture);
       }
 
       setState({
@@ -118,7 +106,7 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
         };
       });
     }
-  }, [detectGesture, calculateFingerDistance, onGestureChange]);
+  }, [detectGesture, calculateFingerDistance]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -299,14 +287,13 @@ export function useHandGesture({ enabled, onGestureChange }: UseHandGestureOptio
         setStatus('processing-frames');
         console.log('[Gesture] MediaPipe Hands initialized');
 
-        // Use requestAnimationFrame with throttling
+        // Use requestAnimationFrame with throttling - 30fps for smooth response
         let lastTime = 0;
-        let frameSkip = 0;
         const processFrame = async (currentTime: number) => {
           if (!mounted || !handsRef.current || !videoRef.current) return;
           
-          // Process at ~15fps for better performance (every 66ms)
-          if (currentTime - lastTime > 66) {
+          // Process at ~30fps (every 33ms)
+          if (currentTime - lastTime > 33) {
             lastTime = currentTime;
             try {
               if (videoRef.current.readyState >= 2) {

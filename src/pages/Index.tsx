@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useState, useCallback, useEffect, lazy, Suspense, useRef } from 'react';
 import { GestureIndicator } from '@/components/christmas/GestureIndicator';
 import { AudioControl } from '@/components/christmas/AudioControl';
 import { PhotoUpload } from '@/components/christmas/PhotoUpload';
@@ -22,6 +22,12 @@ const Index = () => {
   const [orbitRotation, setOrbitRotation] = useState({ x: 0, y: 0 });
   const [cameraPermission, setCameraPermission] = useState<'prompt' | 'granted' | 'denied' | 'requesting'>('prompt');
   const [showInstructions, setShowInstructions] = useState(true);
+  
+  // Use refs for values accessed in callbacks to prevent re-renders
+  const treeStateRef = useRef(treeState);
+  const photosRef = useRef(photos);
+  treeStateRef.current = treeState;
+  photosRef.current = photos;
 
   // Simulate loading progress - slower interval
   useEffect(() => {
@@ -45,8 +51,11 @@ const Index = () => {
   // Audio hook
   const audio = useChristmasAudio();
 
-  // Gesture handling
+  // Gesture handling - use refs to avoid callback recreation
   const handleGestureChange = useCallback((gesture: GestureType) => {
+    const currentTreeState = treeStateRef.current;
+    const currentPhotos = photosRef.current;
+    
     switch (gesture) {
       case 'fist':
         setTreeState('tree');
@@ -57,20 +66,18 @@ const Index = () => {
         setFocusedPhotoIndex(null);
         break;
       case 'pinch':
-        if (treeState === 'galaxy') {
-          // Select random photo when pinching
-          const photoCount = photos.length > 0 ? photos.length : 20;
-          const randomIndex = Math.floor(Math.random() * Math.min(photoCount, 20));
+        if (currentTreeState === 'galaxy') {
+          const photoCount = currentPhotos.length > 0 ? currentPhotos.length : 12;
+          const randomIndex = Math.floor(Math.random() * Math.min(photoCount, 12));
           setFocusedPhotoIndex(randomIndex);
           setTreeState('focus');
-        } else if (treeState === 'focus') {
-          // Release focused photo
+        } else if (currentTreeState === 'focus') {
           setFocusedPhotoIndex(null);
           setTreeState('galaxy');
         }
         break;
     }
-  }, [treeState, photos.length]);
+  }, []); // Empty deps - uses refs
 
   // Request camera permission - actually request it now
   const handleRequestCamera = useCallback(async () => {
