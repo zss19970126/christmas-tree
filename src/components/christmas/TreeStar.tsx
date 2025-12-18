@@ -57,7 +57,7 @@ export function TreeStar({ state }: TreeStarProps) {
     }
 
     // Position based on state
-    const targetY = state === 'tree' ? 4.5 : 10;
+    const targetY = state === 'tree' ? 4.7 : 10;
     groupRef.current.position.y += (targetY - groupRef.current.position.y) * 0.05;
     
     // Fade material
@@ -69,7 +69,7 @@ export function TreeStar({ state }: TreeStarProps) {
   });
 
   return (
-    <group ref={groupRef} position={[0, 4.5, 0]}>
+    <group ref={groupRef} position={[0, 4.7, 0]}>
       {/* Single tilted star */}
       <mesh 
         ref={starRef} 
