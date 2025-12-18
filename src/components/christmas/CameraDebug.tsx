@@ -89,7 +89,7 @@ export function CameraDebug({ enabled }: CameraDebugProps) {
         
         {/* Video container - responsive */}
         {!isMinimized && (
-          <div className="relative w-[140px] sm:w-[200px] md:w-[260px] aspect-[4/3] bg-black">
+          <div className="relative w-[140px] sm:w-[160px] md:w-[180px] lg:w-[260px] aspect-[4/3] bg-black">
             {streamError ? (
               <div className="absolute inset-0 flex items-center justify-center text-white/60 text-xs">
                 摄像头不可用
