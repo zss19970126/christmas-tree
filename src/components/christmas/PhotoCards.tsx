@@ -204,9 +204,11 @@ function PhotoCardMesh({
       {/* 拍立得白色卡片背景 */}
       <mesh geometry={cardGeometry} renderOrder={1}>
         <meshBasicMaterial 
-          color="#d8d8d0"
+          color="#e5e0d5"
           side={THREE.DoubleSide}
           toneMapped={true}
+          opacity={0.95}
+          transparent={true}
         />
       </mesh>
       {/* 照片 */}
