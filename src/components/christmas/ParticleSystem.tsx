@@ -229,31 +229,31 @@ export function ParticleSystem({ state, particleCount = 15000 }: ParticleSystemP
   );
 }
 
-// Colorful ornament balls (red, gold, etc.) - OPTIMIZED
-export function OrnamentBalls({ state }: { state: TreeState }) {
+// Christmas gift boxes (replacing ornament balls) - OPTIMIZED
+export function GiftBoxes({ state }: { state: TreeState }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
+  const ribbonRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
-  const colorsSetRef = useRef(false);
+  const colorsSetRef = useRef({ box: false, ribbon: false });
   const transitionRef = useRef({ progress: 0 });
-  const ornamentCount = 35;
+  const giftCount = 35;
   
-  const ornamentData = useMemo(() => {
+  const giftData = useMemo(() => {
     const colors = [
-      new THREE.Color('#C41E3A'),
-      new THREE.Color('#8B0000'),
-      new THREE.Color('#FFD700'),
-      new THREE.Color('#FF6347'),
-      new THREE.Color('#DC143C'),
-      new THREE.Color('#B22222'),
-      new THREE.Color('#DAA520'),
-      new THREE.Color('#FF4500'),
+      new THREE.Color('#C41E3A'), // Christmas red
+      new THREE.Color('#8B0000'), // Dark red
+      new THREE.Color('#DC143C'), // Crimson
+      new THREE.Color('#B22222'), // Fire brick
+      new THREE.Color('#FF0000'), // Red
     ];
     
-    return Array.from({ length: ornamentCount }, (_, i) => ({
-      treePosition: generateOrnamentPosition(i, ornamentCount),
+    return Array.from({ length: giftCount }, (_, i) => ({
+      treePosition: generateOrnamentPosition(i, giftCount),
       galaxyPosition: generateGalaxyPosition(),
       color: colors[i % colors.length],
-      scale: 0.1 + Math.random() * 0.08,
+      ribbonColor: new THREE.Color('#FFD700'), // Gold ribbon
+      scale: 0.12 + Math.random() * 0.06,
+      rotation: Math.random() * Math.PI * 2,
       delay: Math.random(),
     }));
   }, []);
@@ -272,46 +272,64 @@ export function OrnamentBalls({ state }: { state: TreeState }) {
   }, [state]);
 
   useEffect(() => {
-    if (!meshRef.current || colorsSetRef.current) return;
-    ornamentData.forEach((o, i) => meshRef.current!.setColorAt(i, o.color));
-    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
-    colorsSetRef.current = true;
-  }, [ornamentData]);
+    if (meshRef.current && !colorsSetRef.current.box) {
+      giftData.forEach((g, i) => meshRef.current!.setColorAt(i, g.color));
+      if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
+      colorsSetRef.current.box = true;
+    }
+    if (ribbonRef.current && !colorsSetRef.current.ribbon) {
+      giftData.forEach((g, i) => ribbonRef.current!.setColorAt(i, g.ribbonColor));
+      if (ribbonRef.current.instanceColor) ribbonRef.current.instanceColor.needsUpdate = true;
+      colorsSetRef.current.ribbon = true;
+    }
+  }, [giftData]);
 
   useFrame(() => {
-    if (!meshRef.current) return;
+    if (!meshRef.current || !ribbonRef.current) return;
     
     const progress = transitionRef.current.progress;
     
-    // Skip if idle
     if (!isTransitioningRef.current && Math.abs(progress - lastProgressRef.current) < 0.001) return;
     lastProgressRef.current = progress;
     
-    ornamentData.forEach((ornament, i) => {
-      const p = Math.max(0, Math.min(1, progress * 1.3 - ornament.delay * 0.3));
+    giftData.forEach((gift, i) => {
+      const p = Math.max(0, Math.min(1, progress * 1.3 - gift.delay * 0.3));
       const smooth = p * p * (3 - 2 * p);
       
-      const x = ornament.treePosition[0] + (ornament.galaxyPosition[0] - ornament.treePosition[0]) * smooth;
-      const y = ornament.treePosition[1] + (ornament.galaxyPosition[1] - ornament.treePosition[1]) * smooth;
-      const z = ornament.treePosition[2] + (ornament.galaxyPosition[2] - ornament.treePosition[2]) * smooth;
+      const x = gift.treePosition[0] + (gift.galaxyPosition[0] - gift.treePosition[0]) * smooth;
+      const y = gift.treePosition[1] + (gift.galaxyPosition[1] - gift.treePosition[1]) * smooth;
+      const z = gift.treePosition[2] + (gift.galaxyPosition[2] - gift.treePosition[2]) * smooth;
       
+      // Gift box
       dummy.position.set(x, y, z);
-      dummy.scale.setScalar(ornament.scale);
+      dummy.rotation.y = gift.rotation;
+      dummy.scale.setScalar(gift.scale);
       dummy.updateMatrix();
       meshRef.current!.setMatrixAt(i, dummy.matrix);
+      
+      // Ribbon cross on top
+      dummy.scale.set(gift.scale * 0.3, gift.scale * 1.1, gift.scale * 1.1);
+      dummy.updateMatrix();
+      ribbonRef.current!.setMatrixAt(i, dummy.matrix);
     });
     
     meshRef.current.instanceMatrix.needsUpdate = true;
+    ribbonRef.current.instanceMatrix.needsUpdate = true;
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, ornamentCount]}>
-      <sphereGeometry args={[1, 8, 8]} />
-      <meshBasicMaterial 
-        color="#ff3333"
-        toneMapped={false}
-      />
-    </instancedMesh>
+    <>
+      {/* Gift boxes */}
+      <instancedMesh ref={meshRef} args={[undefined, undefined, giftCount]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial toneMapped={false} />
+      </instancedMesh>
+      {/* Gold ribbons */}
+      <instancedMesh ref={ribbonRef} args={[undefined, undefined, giftCount]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial color="#FFD700" toneMapped={false} />
+      </instancedMesh>
+    </>
   );
 }
 
