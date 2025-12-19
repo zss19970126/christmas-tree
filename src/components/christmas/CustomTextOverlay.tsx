@@ -40,13 +40,21 @@ export function CustomTextOverlay({ isVisible, text, onTextChange }: CustomTextO
     <>
       {/* Custom text display when star is focused */}
       <div 
-        className={`fixed inset-0 flex items-center justify-center pointer-events-none z-20 transition-all duration-1000 ${
-          showText ? 'opacity-100' : 'opacity-0'
-        }`}
+        className={`fixed inset-0 flex items-start justify-center pointer-events-none z-20 pt-[15vh]`}
       >
-        <div className="text-center px-8">
+        <div 
+          className="text-center px-8 transition-all duration-[2000ms] ease-out"
+          style={{
+            opacity: showText ? 1 : 0,
+            transform: showText 
+              ? 'translateZ(0) scale(1)' 
+              : 'translateZ(-200px) scale(0.5)',
+            transformStyle: 'preserve-3d',
+            perspective: '1000px',
+          }}
+        >
           <h1 
-            className="text-4xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent animate-pulse drop-shadow-2xl"
+            className="text-4xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent drop-shadow-2xl"
             style={{
               textShadow: '0 0 40px rgba(255, 215, 0, 0.5), 0 0 80px rgba(255, 215, 0, 0.3)',
               fontFamily: "'Playfair Display', serif",
